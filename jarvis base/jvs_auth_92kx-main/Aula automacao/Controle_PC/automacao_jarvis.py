@@ -1,8 +1,11 @@
 import os
+import json
 import shutil
 import webbrowser
 import zipfile
 import subprocess
+from pathlib import Path
+import sys
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
@@ -17,6 +20,7 @@ class JarvisControl:
             "google": "https://www.google.com",
             "instagram": "https://www.instagram.com"
         }
+        self.shortcuts.update(self._carregar_atalhos())
         self.home = os.path.expanduser('~')
         self.desktop = os.path.join(self.home, 'Desktop')
         self.documents = os.path.join(self.home, 'Documents')
@@ -32,6 +36,36 @@ class JarvisControl:
         self.ignore_folders = {
             "venv", ".venv", "env", "node_modules", "__pycache__", ".git", ".idea", ".vscode"
         }
+
+    def _runtime_dir(self):
+        if getattr(sys, "frozen", False):
+            return Path(sys.executable).resolve().parent
+        return Path(__file__).resolve().parent
+
+    def _carregar_atalhos(self):
+        """Carrega sites extras de config/sites.json ou de JARVIS_SITES_CONFIG."""
+        try:
+            config_env = os.getenv("JARVIS_SITES_CONFIG")
+            config_path = Path(config_env) if config_env else self._runtime_dir() / "config" / "sites.json"
+            if not config_path.exists():
+                return {}
+
+            with config_path.open("r", encoding="utf-8") as file:
+                data = json.load(file)
+
+            if not isinstance(data, dict):
+                return {}
+
+            shortcuts = {}
+            for key, url in data.items():
+                if not isinstance(key, str) or not isinstance(url, str):
+                    continue
+                if not url.startswith(("http://", "https://")):
+                    continue
+                shortcuts[key.lower().strip()] = url.strip()
+            return shortcuts
+        except Exception:
+            return {}
 
     def _resolver_caminho(self, caminho):
         """Traduz apelidos (como 'Área de Trabalho') para caminhos reais e garante caminhos absolutos."""

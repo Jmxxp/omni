@@ -11,6 +11,8 @@ import webbrowser
 import subprocess
 from urllib.parse import quote_plus
 import urllib.request as _urllib
+from pathlib import Path
+import sys
 
 try:
     import yt_dlp
@@ -26,6 +28,12 @@ except ImportError:
 
 from automacao_jarvis import JarvisControl
 
+def _runtime_dir() -> Path:
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent
+
+load_dotenv(_runtime_dir() / ".env")
 load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
@@ -281,7 +289,7 @@ class Assistant(Agent, llm.ToolContext):
 async def entrypoint(ctx: agents.JobContext):
 
     mem0_client = AsyncMemoryClient()
-    user_id = "PedroLucas"
+    user_id = os.getenv("JARVIS_USER_ID", "usuario_principal")
 
     await ctx.connect()
 

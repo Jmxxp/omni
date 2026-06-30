@@ -14,6 +14,17 @@ export interface AppConfig {
   logoDark?: string;
   accentDark?: string;
 
+  audioVisualizerType?: 'bar' | 'grid' | 'radial' | 'wave' | 'aura';
+  audioVisualizerColor?: string;
+  audioVisualizerColorDark?: string;
+  audioVisualizerBarCount?: number;
+  audioVisualizerGridRowCount?: number;
+  audioVisualizerGridColumnCount?: number;
+  audioVisualizerRadialBarCount?: number;
+  audioVisualizerRadialRadius?: number;
+  audioVisualizerWaveLineWidth?: number;
+  audioVisualizerAuraColorShift?: number;
+
   // agent dispatch configuration
   agentName?: string;
 
@@ -35,7 +46,7 @@ export const APP_CONFIG_DEFAULTS: AppConfig = {
   accent: '#002cf2',
   logoDark: '/lk-logo-dark.svg',
   accentDark: '#1fd5f9',
-  startButtonText: 'Iniciar Chamada',
+  startButtonText: 'Iniciar Jarvis',
 
   // agent dispatch configuration
   agentName: process.env.AGENT_NAME ?? undefined,
