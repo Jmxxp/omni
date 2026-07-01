@@ -1,6 +1,0 @@
-node_modules/
-.next/
-dist-desktop/
-build/pyinstaller/
-resources/agent/*.exe
-*.log

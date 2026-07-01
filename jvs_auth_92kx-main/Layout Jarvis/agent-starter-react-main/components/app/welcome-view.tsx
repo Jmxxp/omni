@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button';
-import { Mic2Icon } from 'lucide-react';
 
 function WelcomeImage() {
   return (
@@ -31,30 +30,36 @@ export const WelcomeView = ({
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
   return (
     <div ref={ref}>
-      <section className="bg-background flex flex-col items-center justify-center px-6 text-center">
+      <section className="bg-background flex flex-col items-center justify-center text-center">
         <WelcomeImage />
 
-        <p className="font-mono text-muted-foreground text-xs font-bold tracking-[0.24em] uppercase">
-          Jarvis Desktop
-        </p>
-
-        <h1 className="text-foreground mt-3 text-3xl leading-tight font-semibold md:text-5xl">
-          Assistente de voz local
-        </h1>
-
-        <p className="text-muted-foreground mt-4 max-w-xl text-sm leading-6 font-medium md:text-base">
-          Abra, fale e deixe o Jarvis operar a conversa, navegador e ferramentas conectadas.
+        <p className="text-foreground max-w-prose pt-1 leading-6 font-medium">
+          Chat live with your voice AI agent
         </p>
 
         <Button
           size="lg"
           onClick={onStartCall}
-          className="mt-8 h-12 w-64 rounded-full font-mono text-xs font-bold tracking-wider uppercase"
+          className="mt-6 w-64 rounded-full font-mono text-xs font-bold tracking-wider uppercase"
         >
-          <Mic2Icon className="size-4" />
           {startButtonText}
         </Button>
       </section>
+
+      <div className="fixed bottom-5 left-0 flex w-full items-center justify-center">
+        <p className="text-muted-foreground max-w-prose pt-1 text-xs leading-5 font-normal text-pretty md:text-sm">
+          Need help getting set up? Check out the{' '}
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://docs.livekit.io/agents/start/voice-ai/"
+            className="underline"
+          >
+            Voice AI quickstart
+          </a>
+          .
+        </p>
+      </div>
     </div>
   );
 };
