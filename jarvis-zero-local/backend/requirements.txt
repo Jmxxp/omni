@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+google-genai
+pydantic
+pycaw
+comtypes
+screen-brightness-control

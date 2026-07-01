@@ -9,6 +9,7 @@ import os
 import asyncio
 import webbrowser
 import subprocess
+import inspect
 from urllib.parse import quote_plus
 import urllib.request as _urllib
 
@@ -30,6 +31,20 @@ load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def _env_bool(nome: str, padrao: bool = True) -> bool:
+    valor = os.getenv(nome)
+    if valor is None:
+        return padrao
+    return valor.strip().lower() in {"1", "true", "sim", "yes", "on"}
+
+
+def _env_float(nome: str, padrao: float) -> float:
+    try:
+        return float(os.getenv(nome, str(padrao)))
+    except ValueError:
+        return padrao
 
 # ─────────────────────────────────────────
 # CHROME + CDP
@@ -91,8 +106,8 @@ class Assistant(Agent, llm.ToolContext):
         super().__init__(
             instructions=AGENT_INSTRUCTION,
             llm=google.beta.realtime.RealtimeModel(
-                voice="Charon",
-                temperature=0.6,
+                voice=os.getenv("JARVIS_VOICE", "Charon"),
+                temperature=_env_float("JARVIS_TEMPERATURE", 0.6),
             ),
             chat_ctx=chat_ctx,
         )
@@ -280,8 +295,8 @@ class Assistant(Agent, llm.ToolContext):
 
 async def entrypoint(ctx: agents.JobContext):
 
-    mem0_client = AsyncMemoryClient()
-    user_id = "PedroLucas"
+    mem0_client = AsyncMemoryClient() if os.getenv("MEM0_API_KEY") else None
+    user_id = os.getenv("JARVIS_USER_ID", "Usuario")
 
     await ctx.connect()
 
@@ -292,53 +307,58 @@ async def entrypoint(ctx: agents.JobContext):
         room=ctx.room,
         agent=agent,
         room_input_options=RoomInputOptions(
-            video_enabled=True,
+            video_enabled=_env_bool("JARVIS_VIDEO_ENABLED", True),
             noise_cancellation=noise_cancellation.BVC(),
         ),
     )
 
     # ── Carregar Memória de Longo Prazo ─────────────────
     # NOTA: Na API v2 do Mem0, user_id vai dentro de 'filters'
-    try:
-        logger.info(f"[Mem0] Carregando memórias para '{user_id}'...")
-        response = await mem0_client.search(
-            query="histórico, preferências e informações pessoais do usuário",
-            filters={"user_id": user_id},
-            limit=20,
-        )
-        # O retorno da v2 pode ser dict com "results" ou lista direta
-        if isinstance(response, dict):
-            results = response.get("results", [])
-        elif isinstance(response, list):
-            results = response
-        else:
-            results = []
+    if mem0_client:
+        try:
+            logger.info(f"[Mem0] Carregando memórias para '{user_id}'...")
+            response = await mem0_client.search(
+                query="histórico, preferências e informações pessoais do usuário",
+                filters={"user_id": user_id},
+                limit=20,
+            )
+            # O retorno da v2 pode ser dict com "results" ou lista direta
+            if isinstance(response, dict):
+                results = response.get("results", [])
+            elif isinstance(response, list):
+                results = response
+            else:
+                results = []
 
-        logger.info(f"[Mem0] {len(results)} memórias encontradas.")
+            logger.info(f"[Mem0] {len(results)} memórias encontradas.")
 
-        if results:
-            memorias = []
-            for r in results:
-                texto = None
-                if isinstance(r, dict):
-                    texto = r.get("memory") or r.get("text") or r.get("content")
-                if texto:
-                    memorias.append(f"- {texto}")
+            if results:
+                memorias = []
+                for r in results:
+                    texto = None
+                    if isinstance(r, dict):
+                        texto = r.get("memory") or r.get("text") or r.get("content")
+                    if texto:
+                        memorias.append(f"- {texto}")
 
-            if memorias:
-                bloco = "\n".join(memorias)
-                ctx_copia = agent.chat_ctx.copy()
-                ctx_copia.add_message(
-                    role="assistant",
-                    content=f"[Memória carregada — informações sobre o usuário]\n{bloco}"
-                )
-                agent.update_chat_ctx(ctx_copia)
-                logger.info(f"[Mem0] {len(memorias)} memórias injetadas no contexto.")
-    except Exception as e:
-        logger.error(f"[Mem0] Erro ao carregar memória: {e}")
+                if memorias:
+                    bloco = "\n".join(memorias)
+                    ctx_copia = agent.chat_ctx.copy()
+                    ctx_copia.add_message(
+                        role="assistant",
+                        content=f"[Memória carregada — informações sobre o usuário]\n{bloco}"
+                    )
+                    agent.update_chat_ctx(ctx_copia)
+                    logger.info(f"[Mem0] {len(memorias)} memórias injetadas no contexto.")
+        except Exception as e:
+            logger.error(f"[Mem0] Erro ao carregar memória: {e}")
+    else:
+        logger.info("[Mem0] MEM0_API_KEY ausente. Memória de longo prazo desativada.")
 
     # ── Salvar Memória ao Desligar ───────────────────────
     async def shutdown_hook():
+        if not mem0_client:
+            return
         try:
             msgs = []
             for item in session._agent.chat_ctx.items:
@@ -364,4 +384,8 @@ async def entrypoint(ctx: agents.JobContext):
 
 
 if __name__ == "__main__":
-    agents.cli.run_app(agents.WorkerOptions(entrypoint_fnc=entrypoint))
+    worker_options = {"entrypoint_fnc": entrypoint}
+    agent_name = os.getenv("AGENT_NAME")
+    if agent_name and "agent_name" in inspect.signature(agents.WorkerOptions).parameters:
+        worker_options["agent_name"] = agent_name
+    agents.cli.run_app(agents.WorkerOptions(**worker_options))

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Jarvis Zero</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <aside class="settings-panel">
+        <header class="brand">
+          <div class="brand-mark">J</div>
+          <div>
+            <h1>Jarvis Zero</h1>
+            <p id="healthStatus">Inicializando</p>
+          </div>
+        </header>
+
+        <section class="panel">
+          <div class="panel-title">
+            <h2>Configuração</h2>
+            <span id="keyBadge">Gemini pendente</span>
+          </div>
+
+          <label>
+            <span>Gemini API Key</span>
+            <input id="geminiApiKey" type="password" autocomplete="off" placeholder="cole a chave aqui" />
+          </label>
+
+          <label>
+            <span>Modelo</span>
+            <input id="model" type="text" />
+          </label>
+
+          <label>
+            <span>Usuário</span>
+            <input id="userName" type="text" />
+          </label>
+
+          <div class="grid-2">
+            <label>
+              <span>Temperatura</span>
+              <input id="temperature" type="number" min="0" max="2" step="0.1" />
+            </label>
+            <label>
+              <span>Voz</span>
+              <input id="voiceRate" type="number" min="0.6" max="1.6" step="0.1" />
+            </label>
+          </div>
+
+          <label class="switch-row">
+            <input id="voiceEnabled" type="checkbox" />
+            <span>Falar respostas</span>
+          </label>
+
+          <label class="switch-row">
+            <input id="allowDestructive" type="checkbox" />
+            <span>Permitir ações destrutivas</span>
+          </label>
+
+          <label class="switch-row">
+            <input id="allowTerminal" type="checkbox" />
+            <span>Permitir terminal</span>
+          </label>
+
+          <div class="button-row">
+            <button id="toggleKey" class="secondary" type="button">Mostrar</button>
+            <button id="saveSettings" class="primary" type="button">Salvar</button>
+          </div>
+        </section>
+
+        <section class="panel tools-panel">
+          <h2>Ferramentas</h2>
+          <div class="tool-list">
+            <span>Web</span>
+            <span>YouTube</span>
+            <span>Apps</span>
+            <span>Arquivos</span>
+            <span>Volume</span>
+            <span>Brilho</span>
+          </div>
+        </section>
+      </aside>
+
+      <section class="chat-panel">
+        <header class="chat-header">
+          <div>
+            <span class="eyebrow">Sessão local</span>
+            <h2>Conversa</h2>
+          </div>
+          <div class="status-dot" id="sessionStatus">Pronto</div>
+        </header>
+
+        <div id="messages" class="messages"></div>
+
+        <form id="chatForm" class="composer">
+          <button id="micButton" type="button" class="icon-button" title="Microfone">●</button>
+          <input id="messageInput" type="text" autocomplete="off" placeholder="Fale ou digite um comando" />
+          <button id="sendButton" type="submit" class="primary">Enviar</button>
+        </form>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

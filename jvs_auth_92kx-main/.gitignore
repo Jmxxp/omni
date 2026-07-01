@@ -1,0 +1,8 @@
+logs/
+
+Aula automacao/Controle_PC/.venv/
+Aula automacao/Controle_PC/__pycache__/
+
+Layout Jarvis/agent-starter-react-main/.env.local
+Layout Jarvis/agent-starter-react-main/.next/
+Layout Jarvis/agent-starter-react-main/node_modules/

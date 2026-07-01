@@ -33,21 +33,44 @@ interface ViewControllerProps {
 }
 
 export function ViewController({ appConfig }: ViewControllerProps) {
-  const { isConnected, start } = useSessionContext();
+  const { isConnected, start, end } = useSessionContext();
   const [isActive, setIsActive] = useState(false);
+  const [connectionError, setConnectionError] = useState('');
 
-  // Ativa a sessão quando a conexão é estabelecida ou quando start é chamado
+  // Ativa a sessão apenas quando a conexão é estabelecida.
   useEffect(() => {
-    if (isConnected) setIsActive(true);
+    if (isConnected) {
+      setConnectionError('');
+      setIsActive(true);
+    }
   }, [isConnected]);
 
   const handleStart = async (opts?: any) => {
-    setIsActive(true);
-    await start(opts);
+    setConnectionError('');
+
+    try {
+      await start(opts);
+    } catch (error) {
+      setIsActive(false);
+      try {
+        end();
+      } catch {
+        // Session may already be closed.
+      }
+
+      const message = error instanceof Error ? error.message : String(error);
+      const invalidToken = message.toLowerCase().includes('invalid token');
+      setConnectionError(
+        invalidToken
+          ? 'Token inválido. Confira se LIVEKIT_URL, LIVEKIT_API_KEY e LIVEKIT_API_SECRET são do mesmo projeto LiveKit e se a chave não foi copiada incompleta.'
+          : message
+      );
+    }
   };
 
   const handleDisconnect = () => {
     setIsActive(false);
+    setConnectionError('');
   };
 
   return (
@@ -59,6 +82,7 @@ export function ViewController({ appConfig }: ViewControllerProps) {
           {...VIEW_MOTION_PROPS}
           startButtonText={appConfig.startButtonText}
           onStartCall={handleStart}
+          connectionError={connectionError}
         />
       )}
       {/* Session view */}

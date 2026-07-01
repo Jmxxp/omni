@@ -14,6 +14,17 @@ export interface AppConfig {
   logoDark?: string;
   accentDark?: string;
 
+  audioVisualizerColor?: string;
+  audioVisualizerColorDark?: string;
+  audioVisualizerType?: 'bar' | 'grid' | 'radial' | 'wave' | 'aura';
+  audioVisualizerBarCount?: number;
+  audioVisualizerGridRowCount?: number;
+  audioVisualizerGridColumnCount?: number;
+  audioVisualizerRadialBarCount?: number;
+  audioVisualizerRadialRadius?: number;
+  audioVisualizerWaveLineWidth?: number;
+  audioVisualizerAuraColorShift?: number;
+
   // agent dispatch configuration
   agentName?: string;
 

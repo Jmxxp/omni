@@ -1,4 +1,8 @@
+'use client';
+
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { SetupPanel } from '@/components/app/setup-panel';
 
 function WelcomeImage() {
   return (
@@ -21,45 +25,47 @@ function WelcomeImage() {
 interface WelcomeViewProps {
   startButtonText: string;
   onStartCall: () => void;
+  connectionError?: string;
 }
 
 export const WelcomeView = ({
   startButtonText,
   onStartCall,
+  connectionError,
   ref,
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
-  return (
-    <div ref={ref}>
-      <section className="bg-background flex flex-col items-center justify-center text-center">
-        <WelcomeImage />
+  const [settingsReady, setSettingsReady] = useState(false);
 
-        <p className="text-foreground max-w-prose pt-1 leading-6 font-medium">
-          Chat live with your voice AI agent
-        </p>
+  return (
+    <div ref={ref} className="min-h-svh w-svw bg-black text-white">
+      <section className="mx-auto flex min-h-svh w-full max-w-6xl flex-col items-center justify-center gap-6 px-4 py-8 text-center">
+        <div className="grid justify-items-center">
+          <WelcomeImage />
+
+          <h1 className="text-3xl font-bold tracking-normal md:text-5xl">Jarvis</h1>
+          <p className="mt-2 max-w-prose text-sm leading-6 text-white/70 md:text-base">
+            Assistente de voz com LiveKit, Gemini e automação local.
+          </p>
+        </div>
+
+        <SetupPanel onReadyChange={setSettingsReady} />
+
+        {connectionError && (
+          <div className="w-full max-w-3xl rounded-lg border border-red-300/25 bg-red-500/10 px-4 py-3 text-left text-sm leading-6 text-red-100">
+            <strong className="block text-red-50">Falha ao conectar no LiveKit</strong>
+            <span>{connectionError}</span>
+          </div>
+        )}
 
         <Button
           size="lg"
           onClick={onStartCall}
-          className="mt-6 w-64 rounded-full font-mono text-xs font-bold tracking-wider uppercase"
+          disabled={!settingsReady}
+          className="w-64 rounded-md bg-cyan-400 font-mono text-xs font-bold uppercase tracking-wide text-black hover:bg-cyan-300"
         >
           {startButtonText}
         </Button>
       </section>
-
-      <div className="fixed bottom-5 left-0 flex w-full items-center justify-center">
-        <p className="text-muted-foreground max-w-prose pt-1 text-xs leading-5 font-normal text-pretty md:text-sm">
-          Need help getting set up? Check out the{' '}
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            href="https://docs.livekit.io/agents/start/voice-ai/"
-            className="underline"
-          >
-            Voice AI quickstart
-          </a>
-          .
-        </p>
-      </div>
     </div>
   );
 };
